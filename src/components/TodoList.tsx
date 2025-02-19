@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { fetchTodoList } from '../service/todolist'
-import { ToDo } from '../types/api'
+import { ToDo } from '../types/todolist-api-type'
 
 const TodoList = () => {
   const [todos, setTodos] = useState<ToDo[]>([])

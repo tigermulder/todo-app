@@ -12,3 +12,9 @@ export interface APIResponse<T> {
 }
 
 export type ToDoRequest = Omit<ToDo, 'id'>;
+
+
+export interface ErrorResponse {
+  status: number;
+  message: string;
+}

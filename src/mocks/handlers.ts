@@ -1,5 +1,5 @@
 import { http, HttpResponse, PathParams } from 'msw'
-import { APIResponse, ToDo, ToDoRequest } from '../types/api'
+import { APIResponse, ToDo, ToDoRequest } from '../types/todolist-api-type'
 
 const apiWrapper = <T>(data: T, code = 200, message = ''): APIResponse<T> => {
   return {
