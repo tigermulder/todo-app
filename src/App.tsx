@@ -1,16 +1,25 @@
 import TodoCreator from './components/TodoCreator'
 import TodoList from './components/TodoList'
-import { ToastProvider } from './contexts/ToastMassage'
+import { ModalProvider } from './contexts/ModalContext'
+import { ToastProvider } from './contexts/ToastContext'
 import styled from 'styled-components'
+import { TodoProvider } from './contexts/TodoContext'
 
 function App() {
   return (
-    <ToastProvider>
-      <TodoContainer>
-        <TodoCreator />
-        <TodoList />
-      </TodoContainer>
-    </ToastProvider>
+    <TodoProvider>
+      {/* todo-list data fetch */}
+      <ToastProvider>
+        {/* 토스트 */}
+        <ModalProvider>
+          {/* 모달 */}
+          <TodoContainer>
+            <TodoCreator />
+            <TodoList />
+          </TodoContainer>
+        </ModalProvider>
+      </ToastProvider>
+    </TodoProvider>
   )
 }
 

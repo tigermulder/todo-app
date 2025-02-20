@@ -1,24 +1,30 @@
-import { createTodoList } from '../service/todolist'
 import { useState } from 'react'
+import { createTodoList } from '../service/todolist'
+import { useTodos } from '../contexts/TodoContext'
 import styled from 'styled-components'
 
 const TodoCreator = () => {
   const [text, setText] = useState('')
   const [date, setDate] = useState('')
+  const { fetchTodos } = useTodos()
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setText(e.target.value)
   }
   const handleDate = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDate(e.target.value)
   }
-  const createTodoItem = () => {
+  const createTodoItem = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
     const unixDate = new Date(date).getTime()
     const requestDate = {
       text: text,
       done: false,
       deadline: unixDate,
     }
-    createTodoList(requestDate)
+    await createTodoList(requestDate)
+    await fetchTodos()
+    setText('')
+    setDate('')
   }
 
   return (

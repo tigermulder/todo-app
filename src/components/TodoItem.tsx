@@ -1,18 +1,24 @@
 import { useState } from 'react'
-import { useToast } from '../contexts/ToastMassage'
+import { useToast } from '../contexts/ToastContext'
+import { useModal } from '../contexts/ModalContext'
+import { useTodos } from '../contexts/TodoContext'
+import { deleteTodoItem } from '../service/todolist'
 import styled from 'styled-components'
 
 interface TodoItemProps {
+  id: number
   index: number
   text: string
   done: boolean
   deadline: number
 }
 
-const TodoItem = ({ index, text, done, deadline }: TodoItemProps) => {
+const TodoItem = ({ id, index, text, done, deadline }: TodoItemProps) => {
   const [checked, setChecked] = useState(false)
   const [isCustomDisabled, setIs$customDisabled] = useState(true)
+  const { showModal } = useModal()
   const { showToast } = useToast()
+  const { fetchTodos } = useTodos()
   const handleChecked = () => {
     setChecked((prev) => !prev)
     setIs$customDisabled((prev) => !prev)
@@ -27,6 +33,14 @@ const TodoItem = ({ index, text, done, deadline }: TodoItemProps) => {
     if (!checked) {
       showToast('목록을 체크해주세요')
     }
+    showModal({
+      title: `${index}번 To-do 삭제`,
+      description: '정말로 삭제하시겠습니까?',
+      onConfirm: async () => {
+        await deleteTodoItem(id)
+        await fetchTodos()
+      },
+    })
   }
 
   return (

@@ -1,16 +1,18 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import styled, { keyframes } from 'styled-components'
 
-interface ToastContextProps {
+export interface ToastContextProps {
   showToast: (message: string) => void
   hideToast: () => void
 }
 
 const ToastContext = createContext<ToastContextProps | undefined>(undefined)
 
-export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+interface ToastProviderProps {
+  children: React.ReactNode
+}
+
+export const ToastProvider = ({ children }: ToastProviderProps) => {
   const [isVisible, setIsVisible] = useState(false)
   const [message, setMessage] = useState('')
 

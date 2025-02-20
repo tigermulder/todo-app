@@ -1,21 +1,10 @@
-import { useEffect, useState } from 'react'
-import { fetchTodoList } from '../service/todolist'
-import { ToDo } from '../types/todolist-api-type'
+import { useTodos } from '../contexts/TodoContext'
 import styled from 'styled-components'
 import TodoItem from './TodoItem'
 import TodoListHeader from './TodoListHeader'
 
 const TodoList = () => {
-  const [todos, setTodos] = useState<ToDo[]>([])
-
-  useEffect(() => {
-    const fetchTodos = async () => {
-      const response = await fetchTodoList()
-      setTodos(response.data || [])
-    }
-    fetchTodos()
-  }, [])
-
+  const { todos } = useTodos()
   return (
     <TodoListContainerWrapper>
       <TodoListContainer>
@@ -24,6 +13,7 @@ const TodoList = () => {
           {todos.map((ele, idx) => (
             <TodoItem
               key={ele.id}
+              id={ele.id}
               index={idx + 1}
               text={ele.text}
               done={ele.done}
