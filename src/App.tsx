@@ -4,6 +4,7 @@ import { ModalProvider } from './contexts/ModalContext'
 import { ToastProvider } from './contexts/ToastContext'
 import styled from 'styled-components'
 import { TodoProvider } from './contexts/TodoContext'
+import { UpdateModalProvider } from './contexts/UpdateModalContext'
 
 function App() {
   return (
@@ -15,7 +16,10 @@ function App() {
           {/* 모달 */}
           <TodoContainer>
             <TodoCreator />
-            <TodoList />
+            {/* 업데이트 모달 */}
+            <UpdateModalProvider>
+              <TodoList />
+            </UpdateModalProvider>
           </TodoContainer>
         </ModalProvider>
       </ToastProvider>

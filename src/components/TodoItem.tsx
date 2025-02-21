@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useToast } from '../contexts/ToastContext'
 import { useModal } from '../contexts/ModalContext'
 import { useTodos } from '../contexts/TodoContext'
+import { useUpdateModal } from '../contexts/UpdateModalContext'
 import { deleteTodoItem } from '../service/todolist'
 import styled from 'styled-components'
 
@@ -15,23 +16,58 @@ interface TodoItemProps {
 
 const TodoItem = ({ id, index, text, done, deadline }: TodoItemProps) => {
   const [checked, setChecked] = useState(false)
-  const [isCustomDisabled, setIs$customDisabled] = useState(true)
+  const [isCustomDisabled, setIsCustomDisabled] = useState(true)
+  const { showUpdateModal } = useUpdateModal()
   const { showModal } = useModal()
   const { showToast } = useToast()
   const { fetchTodos } = useTodos()
+
   const handleChecked = () => {
-    setChecked((prev) => !prev)
-    setIs$customDisabled((prev) => !prev)
+    const newChecked = !checked
+    setChecked(newChecked)
+    setIsCustomDisabled(!newChecked)
+
+    const stored = localStorage.getItem('selectedIds')
+    let selectedIds: number[] = stored ? JSON.parse(stored) : []
+
+    if (newChecked) {
+      if (!selectedIds.includes(id)) {
+        selectedIds.push(id)
+      }
+    } else {
+      selectedIds = selectedIds.filter((item) => item !== id)
+    }
+    localStorage.setItem('selectedIds', JSON.stringify(selectedIds))
   }
 
+  // todo 수정 로직
   const handleUpdate = () => {
     if (!checked) {
       showToast('목록을 체크해주세요')
+      return
     }
+    showUpdateModal({
+      id,
+      initialText: text,
+      initialDone: done,
+      initialDeadline: deadline,
+      onUpdated: async () => {
+        await fetchTodos()
+        setChecked(false)
+        setIsCustomDisabled(true)
+        const stored = localStorage.getItem('selectedIds')
+        let selectedIds: number[] = stored ? JSON.parse(stored) : []
+        selectedIds = selectedIds.filter((item) => item !== id)
+        localStorage.setItem('selectedIds', JSON.stringify(selectedIds))
+      },
+    })
   }
+
+  // todo 삭제 로직
   const handleDelete = () => {
     if (!checked) {
       showToast('목록을 체크해주세요')
+      return
     }
     showModal({
       title: `${index}번 To-do 삭제`,
@@ -44,35 +80,27 @@ const TodoItem = ({ id, index, text, done, deadline }: TodoItemProps) => {
   }
 
   return (
-    <>
-      <StyledRow $done={done}>
-        <CheckboxCell>
-          <input type="checkbox" checked={checked} onChange={handleChecked} />
-        </CheckboxCell>
-        <IndexCell>{index}</IndexCell>
-        <TextCell>{text}</TextCell>
-        <DeadlineCell>
-          {new Date(deadline).toLocaleDateString().replace(/\.$/, '')}
-        </DeadlineCell>
-        <StatusCell $done={done}>{done ? '완료' : '미완료'}</StatusCell>
-        <td>
-          <UpdateButton
-            $customDisabled={isCustomDisabled}
-            onClick={handleUpdate}
-          >
-            수정
-          </UpdateButton>
-        </td>
-        <td>
-          <DeleteButton
-            $customDisabled={isCustomDisabled}
-            onClick={handleDelete}
-          >
-            삭제
-          </DeleteButton>
-        </td>
-      </StyledRow>
-    </>
+    <StyledRow $done={done}>
+      <CheckboxCell>
+        <input type="checkbox" checked={checked} onChange={handleChecked} />
+      </CheckboxCell>
+      <IndexCell>{index}</IndexCell>
+      <TextCell>{text}</TextCell>
+      <DeadlineCell>
+        {new Date(deadline).toLocaleDateString().replace(/\.$/, '')}
+      </DeadlineCell>
+      <StatusCell $done={done}>{done ? '완료' : '미완료'}</StatusCell>
+      <td>
+        <UpdateButton $customDisabled={isCustomDisabled} onClick={handleUpdate}>
+          수정
+        </UpdateButton>
+      </td>
+      <td>
+        <DeleteButton $customDisabled={isCustomDisabled} onClick={handleDelete}>
+          삭제
+        </DeleteButton>
+      </td>
+    </StyledRow>
   )
 }
 
@@ -82,13 +110,28 @@ const StyledRow = styled.tr<{ $done: boolean }>`
   background-color: #fff;
   opacity: ${({ $done }) => ($done ? 0.6 : 1)};
   border-bottom: 1px solid #e3e3e3;
+  position: relative;
+
+  &:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #ff4052;
+    transform: scaleX(${({ $done }) => ($done ? 1 : 0)});
+    transform-origin: center;
+    transition: transform 0.2s ease;
+  }
+
   td {
     padding: 15px 0;
-
     button {
       transition: all 0.2s ease;
     }
   }
+
   &:hover {
     background-color: #fafafa;
   }

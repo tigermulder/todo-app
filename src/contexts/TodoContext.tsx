@@ -26,6 +26,7 @@ export const TodoProvider = ({ children }: { children: ReactNode }) => {
   const fetchTodos = async () => {
     const response = await fetchTodoList()
     setTodos(response.data || [])
+    console.log(response)
   }
 
   // 최초 렌더링 시 할 일 목록을 불러오고 싶다면 useEffect를 사용할 수 있습니다.

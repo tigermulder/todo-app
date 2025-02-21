@@ -69,7 +69,7 @@ const Fieldset = styled.fieldset`
   border: none;
   display: flex;
   flex-direction: column;
-  text-align: right;
+  text-align: left;
   gap: 1rem;
 `
 
