@@ -4,23 +4,27 @@ import { useModal } from '../contexts/ModalContext'
 import { useTodos } from '../contexts/TodoContext'
 import { useUpdateModal } from '../contexts/UpdateModalContext'
 import { deleteTodoItem } from '../service/todolist'
-import styled from 'styled-components'
+import styled, { keyframes } from 'styled-components'
 
 interface TodoItemProps {
   id: number
-  index: number
   text: string
   done: boolean
   deadline: number
 }
 
-const TodoItem = ({ id, index, text, done, deadline }: TodoItemProps) => {
+const TodoItem = ({ id, text, done, deadline }: TodoItemProps) => {
   const [checked, setChecked] = useState(false)
   const [isCustomDisabled, setIsCustomDisabled] = useState(true)
   const { showUpdateModal } = useUpdateModal()
   const { showModal } = useModal()
   const { showToast } = useToast()
   const { fetchTodos } = useTodos()
+  // 남은 시간 계산 (밀리초 단위)
+  const now = new Date().getTime()
+  const countDownDate = deadline - now
+  // 3일을 밀리초로 계산
+  const threeDaysInMs = 3 * 24 * 60 * 60 * 1000
 
   const handleChecked = () => {
     const newChecked = !checked
@@ -40,7 +44,7 @@ const TodoItem = ({ id, index, text, done, deadline }: TodoItemProps) => {
     localStorage.setItem('selectedIds', JSON.stringify(selectedIds))
   }
 
-  // todo 수정 로직
+  //** todo 수정 로직 */
   const handleUpdate = () => {
     if (!checked) {
       showToast('목록을 체크해주세요')
@@ -63,14 +67,14 @@ const TodoItem = ({ id, index, text, done, deadline }: TodoItemProps) => {
     })
   }
 
-  // todo 삭제 로직
+  //** todo 삭제 로직 */
   const handleDelete = () => {
     if (!checked) {
       showToast('목록을 체크해주세요')
       return
     }
     showModal({
-      title: `${index}번 To-do 삭제`,
+      title: `${id}번 To-do 삭제`,
       description: '정말로 삭제하시겠습니까?',
       onConfirm: async () => {
         await deleteTodoItem(id)
@@ -84,10 +88,13 @@ const TodoItem = ({ id, index, text, done, deadline }: TodoItemProps) => {
       <CheckboxCell>
         <input type="checkbox" checked={checked} onChange={handleChecked} />
       </CheckboxCell>
-      <IndexCell>{index}</IndexCell>
-      <TextCell>{text}</TextCell>
+      <IndexCell>{id}</IndexCell>
+      <td>{text}</td>
       <DeadlineCell>
-        {new Date(deadline).toLocaleDateString().replace(/\.$/, '')}
+        <p>{new Date(deadline).toLocaleDateString().replace(/\.$/, '')}</p>
+        {countDownDate > 0 && countDownDate < threeDaysInMs && (
+          <WarningText>3일 이내 마감!</WarningText>
+        )}
       </DeadlineCell>
       <StatusCell $done={done}>{done ? '완료' : '미완료'}</StatusCell>
       <td>
@@ -127,6 +134,7 @@ const StyledRow = styled.tr<{ $done: boolean }>`
 
   td {
     padding: 15px 0;
+    vertical-align: middle;
     button {
       transition: all 0.2s ease;
     }
@@ -157,11 +165,27 @@ const IndexCell = styled.td`
   font-weight: bold;
   min-width: 40px;
 `
-const TextCell = styled.td``
 const DeadlineCell = styled.td`
   color: #999;
   font-size: 14px;
   text-align: center;
+`
+
+const blink = keyframes`
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50%{
+    opacity: 0.4;
+  }
+`
+const WarningText = styled.span`
+  display: inline-block;
+  color: red;
+  margin-top: 4px;
+  font-size: 12px;
+  animation: ${blink} 3s linear infinite;
 `
 const StatusCell = styled.td<{ $done: boolean }>`
   font-weight: 500;
